@@ -1161,7 +1161,7 @@
     btn.addEventListener('click', function(){
       var parts = btn.getAttribute('data-pad').split(':');
       var which = parts[0], idx = parseInt(parts[1], 10);
-      var eng = engines[which];
+      var eng = engines['set-'+which];
       if(!eng) return;
       var pos = padPosition(idx);
       var warm = idx % 2 === 0;
@@ -1263,7 +1263,7 @@
     overlay.classList.toggle('on', on);
     screenEl.classList.toggle('measuring', on);
     if(btn) btn.setAttribute('aria-pressed', String(on));
-    var eng = engines[which];
+    var eng = engines['set-'+which];
     if(eng) eng.measuring = on;
     if(on){
       // the row lives inside the sheet now — if it was closed, open it and wait
