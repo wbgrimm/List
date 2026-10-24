@@ -192,7 +192,14 @@
   .set-d .app-head .k{color:var(--d-cyan); opacity:1; letter-spacing:.16em;}
   .set-d .app-head h2{font-family:var(--font-display); font-size:26px; letter-spacing:.02em; text-transform:uppercase;}
   .set-d .applist{display:flex; flex-direction:column; gap:6px; padding:0 14px 18px;}
-  .set-d .row{background:var(--d-glass); color:var(--d-ink); padding:14px var(--pad-x); min-height:56px; border-radius:var(--radius-row); border:1px solid var(--d-line); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); transition:background 100ms, border-color 100ms;}
+  .set-d .row{position:relative; overflow:hidden; background:var(--d-glass); color:var(--d-ink); padding:14px var(--pad-x); min-height:56px; border-radius:var(--radius-row); border:1px solid var(--d-line); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); transition:background 100ms, border-color 100ms;}
+  .ripple-ring{position:absolute; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%;
+    border:2px solid var(--d-cyan); box-shadow:0 0 6px rgba(53,215,232,.45); pointer-events:none;
+    animation:ripple-expand 650ms ease-out forwards;}
+  @keyframes ripple-expand{
+    0%{transform:scale(.4); opacity:.9; border-width:2px;}
+    100%{transform:scale(9); opacity:0; border-width:.5px;}
+  }
   .set-d .row.row-plain{min-height:48px;}
   .set-d .row.row-2line{min-height:72px;}
   .set-d .row.row-sub{border-radius:3px; min-height:44px; background:rgba(9,13,20,.4);}
@@ -271,6 +278,24 @@
   .set-c .detail.is-open{filter:blur(0);}
   .set-c .subrows-wrapper .subrows{opacity:0; filter:blur(5px); transition:opacity 200ms ease 40ms, filter 200ms ease 40ms;}
   .set-c .subrows-wrapper.open .subrows{opacity:1; filter:blur(0);}
+
+  /* Static Hour: a light-leak sweeps across the sheet/detail once when it opens —
+     screen blend always lightens regardless of what's underneath, so it can't
+     wash out on a dark background the way a darker blend mode would. */
+  .set-c .sheet::before, .set-c .detail::before{
+    content:""; position:absolute; inset:-20% -60%; pointer-events:none;
+    background:linear-gradient(115deg, transparent 42%, rgba(255,172,132,.55) 49%, rgba(255,216,172,.35) 54%, transparent 62%);
+    mix-blend-mode:screen; opacity:0; transform:translateX(-65%);
+  }
+  @keyframes light-leak-sweep{
+    0%{transform:translateX(-65%); opacity:0;}
+    18%{opacity:.9;}
+    55%{opacity:.5;}
+    100%{transform:translateX(65%); opacity:0;}
+  }
+  .set-c .sheet.sweeping::before, .set-c .detail.sweeping::before{
+    animation:light-leak-sweep 900ms ease-out;
+  }
 
   .sheet-handle{flex:none; display:flex; justify-content:center; padding:9px 0 3px;}
   .sheet-handle::after{content:""; width:34px; height:4px; border-radius:2px; background:currentColor; opacity:.28;}
@@ -532,6 +557,7 @@
           <tr><td>Card outline</td><td class="val">1px, 14% opacity</td></tr>
           <tr><td>Icon glyph</td><td class="val">Space Mono 400, 19px &mdash; <i>no stroke width:</i> icons are monospace characters, not drawn strokes. Size + weight are the equivalent tokens.</td></tr>
           <tr><td>Sheet / detail / expand</td><td class="val">blur(9/7/5px)&rarr;0 alongside the slide, 320&#8211;360ms &mdash; arrives out of focus, like a print developing</td></tr>
+          <tr><td>Light leak</td><td class="val">diagonal warm gradient, screen&#8209;blended, 900ms one&#8209;shot &mdash; sweeps once when the sheet or a detail panel opens</td></tr>
         </table></div>
         <div class="spec-section"><h4>Color &mdash; two 5&#8209;stop gradients</h4><div class="swatches">
           <span class="swatch"><i style="background:#1A1030"></i>bg #1A1030</span>
@@ -694,6 +720,7 @@
           <tr><td>Thumbnail radius</td><td class="val">3px</td></tr>
           <tr><td>Panel outline</td><td class="val">1px, 16% opacity</td></tr>
           <tr><td>Icon glyph</td><td class="val">JetBrains Mono 400, 19px &mdash; <i>no stroke width:</i> icons are monospace characters, not drawn strokes. Size + weight are the equivalent tokens.</td></tr>
+          <tr><td>Ripple</td><td class="val">12px ring &rarr; 9&times; scale, 650ms ease&#8209;out &mdash; rings out from wherever a row is pressed</td></tr>
         </table></div>
         <div class="spec-section"><h4>Color</h4><div class="swatches">
           <span class="swatch"><i style="background:#07090F"></i>bg #07090F</span>
@@ -750,7 +777,14 @@
     var id = this.getAttribute('data-nav');
     var screen = this.closest('.screen');
     var panel = screen && screen.querySelector('[data-detail="' + id + '"]');
-    if (panel) panel.classList.add('is-open');
+    if (panel){
+      panel.classList.add('is-open');
+      if (panel.closest('.set-c')){
+        panel.classList.remove('sweeping');
+        void panel.offsetWidth;
+        panel.classList.add('sweeping');
+      }
+    }
   });
 
   bind('[data-back]', function(){
@@ -1114,17 +1148,44 @@
     });
   });
 
+  // Undertow only: a ring ripples out from wherever a row is pressed.
+  document.querySelectorAll('.set-d .row').forEach(function(row){
+    row.addEventListener('pointerdown', function(e){
+      var rect = row.getBoundingClientRect();
+      var ring = document.createElement('span');
+      ring.className = 'ripple-ring';
+      ring.style.left = (e.clientX - rect.left) + 'px';
+      ring.style.top = (e.clientY - rect.top) + 'px';
+      row.appendChild(ring);
+      ring.addEventListener('animationend', function(){ ring.remove(); });
+    });
+  });
+
   function setSheet(which, on){
     var sheet = document.getElementById('sheet-'+which);
     var scrim = document.querySelector('.scrim[data-dismiss="'+which+'"]');
     if(!sheet) return;
+    var wasOn = sheet.classList.contains('on');
     sheet.classList.toggle('on', on);
     if(scrim) scrim.classList.toggle('on', on);
+    if(on && !wasOn && which === 'c'){
+      sheet.classList.remove('sweeping');
+      void sheet.offsetWidth;
+      sheet.classList.add('sweeping');
+    }
     if(!on && typeof setMeasuring === 'function') setMeasuring(which, false);
   }
 
   document.querySelectorAll('[data-open-sheet]').forEach(function(btn){
     btn.addEventListener('click', function(){ setSheet(btn.getAttribute('data-open-sheet'), true); });
+  });
+
+  // Static Hour: a light-leak sweep plays once when the sheet or a detail panel
+  // opens, then cleans itself up so it can retrigger next time.
+  document.querySelectorAll('.set-c .sheet, .set-c .detail').forEach(function(el){
+    el.addEventListener('animationend', function(e){
+      if(e.target === el && e.animationName === 'light-leak-sweep') el.classList.remove('sweeping');
+    });
   });
   document.querySelectorAll('[data-close]').forEach(function(btn){
     btn.addEventListener('click', function(){ setSheet(btn.getAttribute('data-close'), false); });
