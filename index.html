@@ -187,7 +187,9 @@
     --d-amber:#FF9340; --d-cyan:#35D7E8; --d-glass:rgba(9,13,20,.58);
   }
   .set-d .screen{background:var(--d-bg); color:var(--d-ink);}
-  .tb-readout{font-family:var(--font-body); font-size:10px; font-weight:700; letter-spacing:.03em;}
+  .tb-readout{appearance:none; cursor:pointer; border:none; background:none; padding:0; color:inherit;
+    font-family:var(--font-body); font-size:10px; font-weight:700; letter-spacing:.03em; transition:transform 110ms;}
+  .tb-readout:active{transform:scale(.9);}
   .set-d .tb-readout{color:var(--d-amber);}
   .set-d .app-head .k{color:var(--d-cyan); opacity:1; letter-spacing:.16em;}
   .set-d .app-head h2{font-family:var(--font-display); font-size:26px; letter-spacing:.02em; text-transform:uppercase;}
@@ -225,15 +227,22 @@
   /* ---------- background "home" screen: the list pops up over this ---------- */
   .home{padding:16px 16px 0; display:flex; flex-direction:column; gap:13px;}
   .toolbar{display:flex; align-items:center; gap:7px;}
-  .tb-pill{display:flex; align-items:center; gap:1px; padding:6px 9px; border-radius:999px;
-    font-family:var(--font-body); font-weight:700; font-size:10.5px; letter-spacing:.06em; border:none;}
-  .tb-pill .icon{width:11px; height:11px; stroke-width:2.4;}
-  .tb-dot{width:9px; height:9px; border-radius:50%; background:currentColor; opacity:.3;}
+  .tb-pill{appearance:none; cursor:pointer; display:flex; align-items:center; gap:1px; padding:6px 9px; border-radius:999px;
+    font-family:var(--font-body); font-weight:700; font-size:10.5px; letter-spacing:.06em; border:none; transition:transform 110ms;}
+  .tb-pill .icon{width:11px; height:11px; stroke-width:2.4; transition:transform 160ms ease;}
+  .tb-pill:active .icon{transform:translateX(3px);}
+  .tb-dot{appearance:none; cursor:pointer; display:block; width:9px; height:9px; border-radius:50%; border:none; padding:0;
+    background:currentColor; opacity:.3; transition:transform 110ms, opacity 160ms;}
   .tb-dot.rec{opacity:1;}
-  .tb-icon{font-family:var(--font-body); font-size:13px; line-height:1;}
+  .tb-icon{appearance:none; cursor:pointer; border:none; background:none; padding:0; color:inherit;
+    font-family:var(--font-body); font-size:13px; line-height:1; transition:transform 110ms;}
   .tb-btn{appearance:none; border:1px solid; background:none; border-radius:8px; padding:5px 8px; cursor:pointer;
-    font-family:var(--font-body); font-size:9.5px; letter-spacing:.05em; display:flex; align-items:center; gap:4px; transition:color 140ms,border-color 140ms;}
+    font-family:var(--font-body); font-size:9.5px; letter-spacing:.05em; display:flex; align-items:center; gap:4px; transition:color 140ms,border-color 140ms,transform 110ms;}
   .tb-gear{margin-left:auto; padding:5px 7px; font-size:12px;}
+  .tb-pill:active, .tb-dot:active, .tb-icon:active, .tb-btn:active:not(.tb-gear){transform:scale(.88);}
+  .tb-dot.rec:active{opacity:.55;}
+  @keyframes gear-spin{ to{ transform:rotate(360deg); } }
+  .tb-gear.spin{ animation:gear-spin 520ms cubic-bezier(.3,0,.2,1); }
 
   .padgrid-label{font-family:var(--font-body); font-size:10px; letter-spacing:.14em; text-transform:uppercase; opacity:.62;}
   .padgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:-5px;}
@@ -390,12 +399,12 @@
           <div class="grain" aria-hidden="true"></div>
           <div class="home">
             <div class="toolbar">
-              <span class="tb-pill">ARCHIVE <svg class="icon chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
-              <span class="tb-dot rec" aria-hidden="true"></span>
-              <span class="tb-icon">&#9654;</span>
-              <span class="tb-dot" aria-hidden="true"></span>
-              <button class="tb-btn" type="button">&#8776; GUIDE</button>
-              <button class="tb-btn tb-gear" type="button" aria-label="Settings">&#9881;</button>
+              <button class="tb-pill" type="button" data-fx="scatter" title="Shuffle the signal">ARCHIVE <svg class="icon chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+              <button class="tb-dot rec" type="button" data-fx="burst" aria-label="Record a stray signal" title="Record a stray signal"></button>
+              <button class="tb-icon" type="button" data-fx="sweep" aria-label="Play" title="Sweep through">&#9654;</button>
+              <button class="tb-dot" type="button" data-fx="ping" aria-label="Ping" title="Ping"></button>
+              <button class="tb-btn" type="button" data-fx="guide" title="Lay down a guide">&#8776; GUIDE</button>
+              <button class="tb-btn tb-gear" type="button" data-fx="vortex" aria-label="Settings" title="Spin up a vortex">&#9881;</button>
             </div>
             <div class="app-head"><span class="k">Static Hour</span><h2>Night Archive</h2></div>
             <div class="padgrid-label">&#9834; SIGNALS</div>
@@ -552,12 +561,12 @@
           <div class="grain" aria-hidden="true"></div>
           <div class="home">
             <div class="toolbar">
-              <span class="tb-pill">MONITOR <svg class="icon chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
-              <span class="tb-dot rec" aria-hidden="true"></span>
-              <span class="tb-icon">&#9654;</span>
-              <span class="readout tb-readout" id="d-readout">FLOW 0.000</span>
-              <button class="tb-btn" type="button">&#8779; GUIDE</button>
-              <button class="tb-btn tb-gear" type="button" aria-label="Settings">&#9881;</button>
+              <button class="tb-pill" type="button" data-fx="scatter" title="Shuffle the current">MONITOR <svg class="icon chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+              <button class="tb-dot rec" type="button" data-fx="burst" aria-label="Flag a reading" title="Flag a reading"></button>
+              <button class="tb-icon" type="button" data-fx="sweep" aria-label="Play" title="Sweep through">&#9654;</button>
+              <button class="readout tb-readout" type="button" id="d-readout" data-fx="surge" title="Force a surge">FLOW 0.000</button>
+              <button class="tb-btn" type="button" data-fx="guide" title="Lay down a guide current">&#8779; GUIDE</button>
+              <button class="tb-btn tb-gear" type="button" data-fx="vortex" aria-label="Settings" title="Spin up a vortex">&#9881;</button>
             </div>
             <div class="app-head"><span class="k">Undertow</span><h2>Live Current Monitor</h2></div>
             <div class="padgrid-label">&#8779; ZONES</div>
@@ -1127,6 +1136,56 @@
       eng.fluid.addImpulse(nx, ny, (Math.random()-0.5)*1.6, (Math.random()-0.5)*1.2 - 0.6, warm?0.8:0.2, warm?0.2:0.8);
       if(reduceMotion){ eng.fluid.step(); eng.renderer.render(); }
     });
+  });
+
+  // toolbar buttons: each is a different one-off disturbance of the field it sits on,
+  // not a coherent system — just a reason for each control to exist.
+  var FX = {
+    scatter: function(fluid){ // ARCHIVE/MONITOR pill — shuffle several bursts at once
+      for(var i = 0; i < 6; i++){
+        var warm = Math.random() < 0.5;
+        fluid.addImpulse(0.12+Math.random()*0.76, 0.12+Math.random()*0.7,
+          (Math.random()-0.5)*3, (Math.random()-0.5)*3, warm?0.75:0.15, warm?0.15:0.75);
+      }
+    },
+    burst: function(fluid){ // rec dot — a single sharp flag, like noting a moment
+      fluid.addImpulse(0.15+Math.random()*0.7, 0.14+Math.random()*0.26, (Math.random()-0.5)*2, 1.6, 0.9, 0.2);
+    },
+    sweep: function(fluid){ // play glyph — a left-to-right scrub
+      for(var i = 0; i < 5; i++) fluid.addImpulse(0.1+i*0.2, 0.42, 2, 0, 0.45, 0.45);
+    },
+    ping: function(fluid){ // plain status dot — a soft center ping
+      fluid.addImpulse(0.5, 0.42, 0, 0, 0.55, 0.55);
+    },
+    surge: function(fluid){ // FLOW readout — reading spikes
+      fluid.addImpulse(0.18+Math.random()*0.64, 0.18+Math.random()*0.5, (Math.random()-0.5)*5, (Math.random()-0.5)*5, 0.85, 0.85);
+    },
+    guide: function(fluid){ // GUIDE — lay down an even reference line
+      for(var i = 0; i < 6; i++) fluid.addImpulse(0.12+i*0.15, 0.22, 0, 0.5, 0.15, 0.55);
+    },
+    vortex: function(fluid){ // gear — spin up a small swirl
+      var n = 10, cx = 0.5, cy = 0.34, r = 0.2;
+      for(var i = 0; i < n; i++){
+        var a = (i/n) * Math.PI * 2;
+        fluid.addImpulse(cx+Math.cos(a)*r, cy+Math.sin(a)*r, -Math.sin(a)*2.4, Math.cos(a)*2.4, 0.3, 0.3);
+      }
+    }
+  };
+  document.querySelectorAll('[data-fx]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var panel = btn.closest('.set-panel');
+      var eng = panel && engines[panel.id];
+      if(!eng) return;
+      var fn = FX[btn.getAttribute('data-fx')];
+      if(fn) fn(eng.fluid);
+      if(btn.classList.contains('tb-gear')){
+        btn.classList.remove('spin');
+        void btn.offsetWidth;
+        btn.classList.add('spin');
+      }
+      if(reduceMotion){ eng.fluid.step(); eng.renderer.render(); }
+    });
+    btn.addEventListener('animationend', function(){ btn.classList.remove('spin'); });
   });
 
   document.addEventListener('set-tab-change', function(e){
