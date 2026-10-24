@@ -970,6 +970,7 @@
 
   document.addEventListener('set-tab-change', function(e){
     activeId = e.detail.target;
+    if(typeof setMeasuring === 'function'){ setMeasuring('c', false); setMeasuring('d', false); }
     var eng = engines[activeId];
     if(eng){ eng.renderer.resize(); eng.renderer.render(); }
   });
@@ -1024,22 +1025,45 @@
     });
   }
 
+  var measureBtns = {};
+  document.querySelectorAll('.measure-btn').forEach(function(btn){
+    measureBtns[btn.getAttribute('data-measure')] = btn;
+  });
+
+  function setMeasuring(which, on){
+    var overlay = document.getElementById('measure-overlay-'+which);
+    var screenEl = document.getElementById('screen-'+which);
+    var btn = measureBtns[which];
+    if(!overlay || !screenEl) return;
+    if(overlay.classList.contains('on') === on) return;
+    overlay.classList.toggle('on', on);
+    screenEl.classList.toggle('measuring', on);
+    if(btn) btn.setAttribute('aria-pressed', String(on));
+    var eng = engines[which];
+    if(eng) eng.measuring = on;
+    if(on){
+      renderMeasurements(which);
+    } else {
+      overlay.classList.remove('scrim-in');
+    }
+    if(reduceMotion && eng){ eng.renderer.render(); }
+  }
+
   document.querySelectorAll('.measure-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
       var which = btn.getAttribute('data-measure');
       var overlay = document.getElementById('measure-overlay-'+which);
-      var screenEl = document.getElementById('screen-'+which);
-      var on = overlay.classList.toggle('on');
-      btn.setAttribute('aria-pressed', String(on));
-      if(screenEl) screenEl.classList.toggle('measuring', on);
-      var eng = engines[which];
-      if(eng) eng.measuring = on;
-      if(on){
-        renderMeasurements(which);
-      } else {
-        overlay.classList.remove('scrim-in');
-      }
-      if(reduceMotion && eng){ eng.renderer.render(); }
+      setMeasuring(which, !overlay.classList.contains('on'));
+    });
+  });
+
+  // any other interaction in the screen (navigate, expand, back) cancels measure mode —
+  // a stale overlay pointing at content that just changed underneath it is worse than none.
+  ['c', 'd'].forEach(function(which){
+    var screenEl = document.getElementById('screen-'+which);
+    if(!screenEl) return;
+    screenEl.addEventListener('click', function(e){
+      if(screenEl.classList.contains('measuring')) setMeasuring(which, false);
     });
   });
 
