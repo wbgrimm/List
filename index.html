@@ -279,22 +279,31 @@
   .set-c .subrows-wrapper .subrows{opacity:0; filter:blur(5px); transition:opacity 200ms ease 40ms, filter 200ms ease 40ms;}
   .set-c .subrows-wrapper.open .subrows{opacity:1; filter:blur(0);}
 
-  /* Static Hour: a light-leak sweeps across the sheet/detail once when it opens —
-     screen blend always lightens regardless of what's underneath, so it can't
-     wash out on a dark background the way a darker blend mode would. */
+  /* Static Hour: real TV-static fuzz sits over the sheet/detail and clears as it
+     opens, then returns as it closes — a plain opacity transition tied to the
+     same .on/.is-open classes everything else uses, so both directions are free.
+     The flicker underneath just loops continuously; opacity is what makes it
+     visible or not, so there's no JS triggering to get wrong. */
   .set-c .sheet::before, .set-c .detail::before{
-    content:""; position:absolute; inset:-20% -60%; pointer-events:none;
-    background:linear-gradient(115deg, transparent 42%, rgba(255,172,132,.55) 49%, rgba(255,216,172,.35) 54%, transparent 62%);
-    mix-blend-mode:screen; opacity:0; transform:translateX(-65%);
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background-image:url("data:image/png;base64,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");
+    background-size:64px 64px; image-rendering:pixelated;
+    opacity:.85; animation:fuzz-flicker 130ms steps(1) infinite;
   }
-  @keyframes light-leak-sweep{
-    0%{transform:translateX(-65%); opacity:0;}
-    18%{opacity:.9;}
-    55%{opacity:.5;}
-    100%{transform:translateX(65%); opacity:0;}
-  }
-  .set-c .sheet.sweeping::before, .set-c .detail.sweeping::before{
-    animation:light-leak-sweep 900ms ease-out;
+  .set-c .sheet::before{transition:opacity 340ms ease;}
+  .set-c .sheet.on::before{opacity:0;}
+  .set-c .detail::before{transition:opacity 300ms ease;}
+  .set-c .detail.is-open::before{opacity:0;}
+  @keyframes fuzz-flicker{
+    0%{background-position:0 0;}
+    12%{background-position:-23px 11px;}
+    24%{background-position:17px -19px;}
+    36%{background-position:-9px 24px;}
+    48%{background-position:28px 6px;}
+    60%{background-position:-17px -13px;}
+    72%{background-position:11px 21px;}
+    84%{background-position:-26px -7px;}
+    100%{background-position:0 0;}
   }
 
   .sheet-handle{flex:none; display:flex; justify-content:center; padding:9px 0 3px;}
@@ -557,7 +566,7 @@
           <tr><td>Card outline</td><td class="val">1px, 14% opacity</td></tr>
           <tr><td>Icon glyph</td><td class="val">Space Mono 400, 19px &mdash; <i>no stroke width:</i> icons are monospace characters, not drawn strokes. Size + weight are the equivalent tokens.</td></tr>
           <tr><td>Sheet / detail / expand</td><td class="val">blur(9/7/5px)&rarr;0 alongside the slide, 320&#8211;360ms &mdash; arrives out of focus, like a print developing</td></tr>
-          <tr><td>Light leak</td><td class="val">diagonal warm gradient, screen&#8209;blended, 900ms one&#8209;shot &mdash; sweeps once when the sheet or a detail panel opens</td></tr>
+          <tr><td>Fuzz</td><td class="val">random (non&#8209;ordered) noise, RGBA, 64px tile, 130ms stepped flicker &mdash; sits over the sheet/detail and clears as it opens, returns on close</td></tr>
         </table></div>
         <div class="spec-section"><h4>Color &mdash; two 5&#8209;stop gradients</h4><div class="swatches">
           <span class="swatch"><i style="background:#1A1030"></i>bg #1A1030</span>
@@ -777,14 +786,7 @@
     var id = this.getAttribute('data-nav');
     var screen = this.closest('.screen');
     var panel = screen && screen.querySelector('[data-detail="' + id + '"]');
-    if (panel){
-      panel.classList.add('is-open');
-      if (panel.closest('.set-c')){
-        panel.classList.remove('sweeping');
-        void panel.offsetWidth;
-        panel.classList.add('sweeping');
-      }
-    }
+    if (panel) panel.classList.add('is-open');
   });
 
   bind('[data-back]', function(){
@@ -1165,27 +1167,13 @@
     var sheet = document.getElementById('sheet-'+which);
     var scrim = document.querySelector('.scrim[data-dismiss="'+which+'"]');
     if(!sheet) return;
-    var wasOn = sheet.classList.contains('on');
     sheet.classList.toggle('on', on);
     if(scrim) scrim.classList.toggle('on', on);
-    if(on && !wasOn && which === 'c'){
-      sheet.classList.remove('sweeping');
-      void sheet.offsetWidth;
-      sheet.classList.add('sweeping');
-    }
     if(!on && typeof setMeasuring === 'function') setMeasuring(which, false);
   }
 
   document.querySelectorAll('[data-open-sheet]').forEach(function(btn){
     btn.addEventListener('click', function(){ setSheet(btn.getAttribute('data-open-sheet'), true); });
-  });
-
-  // Static Hour: a light-leak sweep plays once when the sheet or a detail panel
-  // opens, then cleans itself up so it can retrigger next time.
-  document.querySelectorAll('.set-c .sheet, .set-c .detail').forEach(function(el){
-    el.addEventListener('animationend', function(e){
-      if(e.target === el && e.animationName === 'light-leak-sweep') el.classList.remove('sweeping');
-    });
   });
   document.querySelectorAll('[data-close]').forEach(function(btn){
     btn.addEventListener('click', function(){ setSheet(btn.getAttribute('data-close'), false); });
