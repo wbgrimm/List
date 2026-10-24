@@ -239,21 +239,34 @@
   /* ---------- measurement overlay: dimension lines drawn on a live row ---------- */
   .measure-btn{appearance:none; cursor:pointer; margin-top:14px; padding:8px 14px; border-radius:7px;
     border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
-    font-family:var(--mono); font-size:11.5px; letter-spacing:.04em;}
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.04em; transition:background 160ms,color 160ms,border-color 160ms;}
   .measure-btn:hover{color:var(--ink); border-color:var(--ink-soft);}
-  .measure-btn[aria-pressed="true"]{color:#1A1A16; background:#8CFFB0; border-color:#8CFFB0;}
+  .measure-btn[aria-pressed="true"]{color:#06140C; background:#8CFFB0; border-color:#8CFFB0;}
+
+  /* calm the background so the lines actually read, instead of fighting grain/scanlines/current */
+  .screen.measuring .fluid-color, .screen.measuring .fluid-glyph{opacity:.1; transition:opacity 320ms ease;}
+  .screen.measuring .grain{opacity:.06; animation-play-state:paused; transition:opacity 320ms ease;}
+  .set-c .screen.measuring::after{animation-play-state:paused; opacity:.35; transition:opacity 320ms ease;}
+  .fluid-color, .fluid-glyph{transition:opacity 320ms ease;}
+
   .measure-overlay{position:absolute; inset:0; z-index:8; pointer-events:none; display:none;}
   .measure-overlay.on{display:block;}
-  .dim-h, .dim-v{position:absolute; background:#39FF88;}
-  .dim-h{height:1px;}
-  .dim-v{width:1px;}
+  .measure-overlay.on::before{content:""; position:absolute; inset:0; background:rgba(3,7,6,.4);
+    opacity:0; transition:opacity 320ms ease;}
+  .measure-overlay.on.scrim-in::before{opacity:1;}
+  .dim-h, .dim-v{position:absolute; background:#39FF88; opacity:0; transform:scale(.9); transition:opacity 240ms ease, transform 240ms ease;}
+  .dim-h.dim-in, .dim-v.dim-in{opacity:1; transform:scale(1);}
+  .dim-h{height:1px; transform-origin:left center;}
+  .dim-v{width:1px; transform-origin:center top;}
   .dim-h::before, .dim-h::after{content:"";position:absolute; top:-3px; width:1px; height:7px; background:#39FF88;}
   .dim-h::before{left:0;} .dim-h::after{right:0;}
   .dim-v::before, .dim-v::after{content:"";position:absolute; left:-3px; height:1px; width:7px; background:#39FF88;}
   .dim-v::before{top:0;} .dim-v::after{bottom:0;}
-  .dim-label{position:absolute; transform:translate(-50%,-50%); background:#0B140D; color:#8CFFB0;
+  .dim-label{position:absolute; transform:translate(-50%,-50%) scale(.9); opacity:0; transition:opacity 240ms ease 80ms, transform 240ms ease 80ms;
+    background:#06140C; color:#8CFFB0;
     font-family:'IBM Plex Mono', monospace; font-size:10px; line-height:1; padding:2px 5px; border-radius:3px;
     border:1px solid rgba(140,255,176,.5); white-space:nowrap;}
+  .dim-label.dim-in{opacity:1; transform:translate(-50%,-50%) scale(1);}
 
   /* ---------- CRT / terminal frame (Set C & D) ---------- */
   .phone.crt{background:#07080A; max-width:520px; box-shadow:inset 0 0 0 2px rgba(255,255,255,.04), 0 1px 2px rgba(0,0,0,.08), 0 18px 40px -16px rgba(0,0,0,.45);}
@@ -998,15 +1011,35 @@
     dim(trail.r, midY, row.r, midY, Math.round(row.r-trail.r)+'');
     dim(slot.r+7, slot.t, slot.r+7, slot.b, Math.round(slot.h)+'sq');
     dim(row.r+16, row.t, row.r+16, row.b, Math.round(row.h)+'');
+
+    overlayEl.classList.remove('scrim-in');
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        overlayEl.classList.add('scrim-in');
+        overlayEl.querySelectorAll('.dim-h, .dim-v, .dim-label').forEach(function(el, i){
+          el.style.transitionDelay = (i*18) + 'ms';
+          el.classList.add('dim-in');
+        });
+      });
+    });
   }
 
   document.querySelectorAll('.measure-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
       var which = btn.getAttribute('data-measure');
       var overlay = document.getElementById('measure-overlay-'+which);
+      var screenEl = document.getElementById('screen-'+which);
       var on = overlay.classList.toggle('on');
       btn.setAttribute('aria-pressed', String(on));
-      if(on) renderMeasurements(which);
+      if(screenEl) screenEl.classList.toggle('measuring', on);
+      var eng = engines[which];
+      if(eng) eng.measuring = on;
+      if(on){
+        renderMeasurements(which);
+      } else {
+        overlay.classList.remove('scrim-in');
+      }
+      if(reduceMotion && eng){ eng.renderer.render(); }
     });
   });
 
@@ -1026,6 +1059,7 @@
       if(!eng) return;
       var sectionEl = document.getElementById(activeId);
       if(sectionEl && sectionEl.hidden) return;
+      if(eng.measuring) return;
       var speed = eng.fluid.step();
       eng.renderer.render();
       if(activeId === 'set-d'){
