@@ -272,22 +272,6 @@
   .set-c .subrows-wrapper .subrows{opacity:0; filter:blur(5px); transition:opacity 200ms ease 40ms, filter 200ms ease 40ms;}
   .set-c .subrows-wrapper.open .subrows{opacity:1; filter:blur(0);}
 
-  /* Static Hour: the overlays themselves dither into existence and dither away again —
-     an 8x8 ordered Bayer pattern, binarized, scaled up with pixelated rendering so it
-     reads as chunky retro dither rather than a smooth fade. Tied only to the sheet
-     (Open Archive) and the detail panel (tap a row to dither it over the list; back
-     dithers it away again), not to every button press. */
-  .set-c .sheet::after, .set-c .detail::after{
-    content:""; position:absolute; inset:0; pointer-events:none;
-    background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAGElEQVR42mNgAIIvbx78x0njlYSBIW8CANLLd+GaguOIAAAAAElFTkSuQmCC");
-    background-size:48px 48px; image-rendering:pixelated;
-    opacity:.92;
-  }
-  .set-c .sheet::after{transition:opacity 380ms steps(6,end);}
-  .set-c .sheet.on::after{opacity:0;}
-  .set-c .detail::after{transition:opacity 340ms steps(5,end);}
-  .set-c .detail.is-open::after{opacity:0;}
-
   .sheet-handle{flex:none; display:flex; justify-content:center; padding:9px 0 3px;}
   .sheet-handle::after{content:""; width:34px; height:4px; border-radius:2px; background:currentColor; opacity:.28;}
   .sheet-head{flex:none; display:flex; align-items:center; gap:8px; padding:3px 16px 10px;}
@@ -548,7 +532,6 @@
           <tr><td>Card outline</td><td class="val">1px, 14% opacity</td></tr>
           <tr><td>Icon glyph</td><td class="val">Space Mono 400, 19px &mdash; <i>no stroke width:</i> icons are monospace characters, not drawn strokes. Size + weight are the equivalent tokens.</td></tr>
           <tr><td>Sheet / detail / expand</td><td class="val">blur(9/7/5px)&rarr;0 alongside the slide, 320&#8211;360ms &mdash; arrives out of focus, like a print developing</td></tr>
-          <tr><td>Dither</td><td class="val">8&times;8 ordered Bayer pattern, RGBA cream dots on transparent, 48px tile (6px/cell), stepped not eased &mdash; the sheet dithers in on Open Archive (380ms); the detail panel dithers over the list on tap and dithers away on back (340ms)</td></tr>
         </table></div>
         <div class="spec-section"><h4>Color &mdash; two 5&#8209;stop gradients</h4><div class="swatches">
           <span class="swatch"><i style="background:#1A1030"></i>bg #1A1030</span>
