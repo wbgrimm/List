@@ -72,7 +72,6 @@
   /* ---------- phone frame ---------- */
   .phone{width:100%; max-width:348px; margin-inline:auto; border-radius:34px; padding:10px; background:#0B0C10; box-shadow:0 1px 2px rgba(0,0,0,.06), 0 18px 40px -16px rgba(0,0,0,.35);}
   .screen{position:relative; overflow:hidden; border-radius:26px; height:620px; display:flex; flex-direction:column;}
-  .statusbar{display:flex; justify-content:space-between; align-items:center; padding:12px 20px 4px; font-family:var(--mono); font-size:11px; letter-spacing:.02em; flex:none;}
   .applist{flex:1; overflow-y:auto; padding-bottom:18px;}
 
   .app-head{padding:6px 20px 18px;}
@@ -151,7 +150,6 @@
     --c-rose:#D17B93; --c-teal:#5FA8A3; --c-glass:rgba(30,23,38,.6);
   }
   .set-c .screen{background:var(--c-bg); color:var(--c-ink);}
-  .set-c .statusbar{color:var(--c-rose); letter-spacing:.08em;}
   .set-c .app-head .k{color:var(--c-rose); opacity:1; letter-spacing:.14em;}
   .set-c .app-head h2{font-size:30px; letter-spacing:.03em; text-shadow:1.5px 0 rgba(255,90,150,.5), -1.5px 0 rgba(95,230,210,.5);}
   .set-c .applist{display:flex; flex-direction:column; gap:8px; padding:0 14px 18px;}
@@ -189,8 +187,8 @@
     --d-amber:#FF9340; --d-cyan:#35D7E8; --d-glass:rgba(9,13,20,.58);
   }
   .set-d .screen{background:var(--d-bg); color:var(--d-ink);}
-  .set-d .statusbar{color:var(--d-cyan); letter-spacing:.1em;}
-  .set-d .statusbar .readout{font-family:var(--font-body); font-size:10.5px; color:var(--d-amber);}
+  .tb-readout{font-family:var(--font-body); font-size:10px; font-weight:700; letter-spacing:.03em;}
+  .set-d .tb-readout{color:var(--d-amber);}
   .set-d .app-head .k{color:var(--d-cyan); opacity:1; letter-spacing:.16em;}
   .set-d .app-head h2{font-family:var(--font-display); font-size:26px; letter-spacing:.02em; text-transform:uppercase;}
   .set-d .applist{display:flex; flex-direction:column; gap:6px; padding:0 14px 18px;}
@@ -222,7 +220,74 @@
   .fluid-color, .fluid-glyph{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
   .fluid-color{z-index:0; image-rendering:pixelated; image-rendering:-moz-crisp-edges; image-rendering:crisp-edges;}
   .fluid-glyph{z-index:1; opacity:.82; mix-blend-mode:screen;}
-  .screen > .statusbar, .screen > .app-head, .screen > .applist{position:relative; z-index:2;}
+  .screen > .home{position:relative; z-index:2;}
+
+  /* ---------- background "home" screen: the list pops up over this ---------- */
+  .home{padding:16px 16px 0; display:flex; flex-direction:column; gap:13px;}
+  .toolbar{display:flex; align-items:center; gap:7px;}
+  .tb-pill{display:flex; align-items:center; gap:1px; padding:6px 9px; border-radius:999px;
+    font-family:var(--font-body); font-weight:700; font-size:10.5px; letter-spacing:.06em; border:none;}
+  .tb-pill .icon{width:11px; height:11px; stroke-width:2.4;}
+  .tb-dot{width:9px; height:9px; border-radius:50%; background:currentColor; opacity:.3;}
+  .tb-dot.rec{opacity:1;}
+  .tb-icon{font-family:var(--font-body); font-size:13px; line-height:1;}
+  .tb-btn{appearance:none; border:1px solid; background:none; border-radius:8px; padding:5px 8px; cursor:pointer;
+    font-family:var(--font-body); font-size:9.5px; letter-spacing:.05em; display:flex; align-items:center; gap:4px; transition:color 140ms,border-color 140ms;}
+  .tb-gear{margin-left:auto; padding:5px 7px; font-size:12px;}
+
+  .padgrid-label{font-family:var(--font-body); font-size:10px; letter-spacing:.14em; text-transform:uppercase; opacity:.62;}
+  .padgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:-5px;}
+  .pad{position:relative; appearance:none; cursor:pointer; border:none; border-radius:10px; height:48px;
+    background:var(--pad); color:rgba(0,0,0,.72); font-size:17px; display:flex; align-items:center; justify-content:center;
+    transition:transform 120ms, filter 120ms;}
+  .pad:hover{filter:brightness(1.1);}
+  .pad:active{transform:scale(.92);}
+  .pad i{position:absolute; right:5px; bottom:2px; font-style:normal; font-size:8.5px; opacity:.5; font-family:var(--mono);}
+
+  .open-sheet-btn{appearance:none; cursor:pointer; align-self:flex-start; margin:1px 0 18px; padding:9px 13px; border-radius:999px;
+    border:1px solid; background:none; font-family:var(--font-body); font-weight:700; font-size:11px; letter-spacing:.05em;
+    display:flex; align-items:center; gap:4px; transition:background 140ms,color 140ms;}
+  .open-sheet-btn .icon{width:12px; height:12px; transform:rotate(-90deg);}
+
+  .scrim{position:absolute; inset:0; z-index:6; background:rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity 280ms ease;}
+  .scrim.on{opacity:1; pointer-events:auto;}
+
+  .sheet{position:absolute; left:0; right:0; bottom:0; top:38%; z-index:7; display:flex; flex-direction:column;
+    border-radius:20px 20px 0 0; overflow:hidden; transform:translateY(102%); transition:transform 340ms cubic-bezier(.22,.8,.24,1);
+    box-shadow:0 -18px 40px -14px rgba(0,0,0,.5);}
+  .sheet.on{transform:translateY(0);}
+  .sheet-handle{flex:none; display:flex; justify-content:center; padding:9px 0 3px;}
+  .sheet-handle::after{content:""; width:34px; height:4px; border-radius:2px; background:currentColor; opacity:.28;}
+  .sheet-head{flex:none; display:flex; align-items:center; gap:8px; padding:3px 16px 10px;}
+  .sheet-head .glyph{font-family:var(--font-body); font-size:15px;}
+  .sheet-title{flex:1; font-family:var(--font-display); font-size:17px;}
+  .sheet-close{appearance:none; cursor:pointer; border:none; background:none; color:inherit; font-size:13px; opacity:.6; padding:4px;}
+  .sheet-close:hover{opacity:1;}
+  .sheet .applist{flex:1;}
+
+  .set-c .home, .set-c .sheet{color:var(--c-ink);}
+  .set-c .tb-pill{background:var(--c-rose); color:#1A0E14;}
+  .set-c .tb-icon, .set-c .tb-dot{color:var(--c-rose);}
+  .set-c .tb-dot.rec{background:var(--c-rose);}
+  .set-c .tb-btn{border-color:var(--c-line); color:var(--c-soft);}
+  .set-c .tb-btn:hover{color:var(--c-ink); border-color:var(--c-rose);}
+  .set-c .padgrid-label{color:var(--c-soft);}
+  .set-c .open-sheet-btn{border-color:var(--c-rose); color:var(--c-rose);}
+  .set-c .open-sheet-btn:hover{background:var(--c-rose); color:#1A0E14;}
+  .set-c .sheet{background:var(--c-bg);}
+  .set-c .sheet-close{color:var(--c-rose);}
+
+  .set-d .home, .set-d .sheet{color:var(--d-ink);}
+  .set-d .tb-pill{background:var(--d-amber); color:#1A0E02;}
+  .set-d .tb-icon, .set-d .tb-dot{color:var(--d-cyan);}
+  .set-d .tb-dot.rec{background:var(--d-amber);}
+  .set-d .tb-btn{border-color:var(--d-line); color:var(--d-soft);}
+  .set-d .tb-btn:hover{color:var(--d-ink); border-color:var(--d-cyan);}
+  .set-d .padgrid-label{color:var(--d-soft);}
+  .set-d .open-sheet-btn{border-color:var(--d-cyan); color:var(--d-cyan);}
+  .set-d .open-sheet-btn:hover{background:var(--d-cyan); color:#02161A;}
+  .set-d .sheet{background:var(--d-bg);}
+  .set-d .sheet-close{color:var(--d-cyan);}
 
   .grain{position:absolute; inset:0; z-index:4; pointer-events:none; opacity:.5; mix-blend-mode:overlay;
     background-image:url("data:image/png;base64,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");
@@ -249,7 +314,7 @@
   .set-c .screen.measuring::after{animation-play-state:paused; opacity:.35; transition:opacity 320ms ease;}
   .fluid-color, .fluid-glyph{transition:opacity 320ms ease;}
 
-  .measure-overlay{position:absolute; inset:0; z-index:8; pointer-events:none; display:none;}
+  .measure-overlay{position:absolute; inset:0; z-index:9; pointer-events:none; display:none;}
   .measure-overlay.on{display:block;}
   .measure-overlay.on::before{content:""; position:absolute; inset:0; background:rgba(3,7,6,.4);
     opacity:0; transition:opacity 320ms ease;}
@@ -270,7 +335,7 @@
 
   /* ---------- CRT / terminal frame (Set C & D) ---------- */
   .phone.crt{background:#07080A; max-width:520px; box-shadow:inset 0 0 0 2px rgba(255,255,255,.04), 0 1px 2px rgba(0,0,0,.08), 0 18px 40px -16px rgba(0,0,0,.45);}
-  .phone.crt .screen::before{content:"";position:absolute; inset:0; z-index:6; pointer-events:none;
+  .phone.crt .screen::before{content:"";position:absolute; inset:0; z-index:8; pointer-events:none;
     background:radial-gradient(ellipse at 50% 10%, rgba(255,255,255,.05), transparent 55%), radial-gradient(ellipse at 50% 105%, rgba(0,0,0,.4), transparent 55%);}
   .set-c .screen::after{content:"";position:absolute; inset:0; z-index:5; pointer-events:none;
     background:repeating-linear-gradient(rgba(0,0,0,0) 0 2px, rgba(0,0,0,.2) 2px 3px); mix-blend-mode:multiply;}
@@ -323,11 +388,39 @@
           <canvas class="fluid-color" id="c-color"></canvas>
           <canvas class="fluid-glyph" id="c-glyph"></canvas>
           <div class="grain" aria-hidden="true"></div>
-          <div class="statusbar"><span>9:41</span><span>REC &#9679;</span></div>
-          <div class="app-head"><span class="k">Static Hour</span><h2>Night Archive</h2></div>
+          <div class="home">
+            <div class="toolbar">
+              <span class="tb-pill">ARCHIVE <svg class="icon chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+              <span class="tb-dot rec" aria-hidden="true"></span>
+              <span class="tb-icon">&#9654;</span>
+              <span class="tb-dot" aria-hidden="true"></span>
+              <button class="tb-btn" type="button">&#8776; GUIDE</button>
+              <button class="tb-btn tb-gear" type="button" aria-label="Settings">&#9881;</button>
+            </div>
+            <div class="app-head"><span class="k">Static Hour</span><h2>Night Archive</h2></div>
+            <div class="padgrid-label">&#9834; SIGNALS</div>
+            <div class="padgrid">
+              <button class="pad" type="button" data-pad="c:0" style="--pad:var(--c-rose)">&#8776;<i>1</i></button>
+              <button class="pad" type="button" data-pad="c:1" style="--pad:var(--c-teal)">&#9678;<i>2</i></button>
+              <button class="pad" type="button" data-pad="c:2" style="--pad:var(--c-rose)">&#9654;<i>3</i></button>
+              <button class="pad" type="button" data-pad="c:3" style="--pad:var(--c-teal)">&#9834;<i>4</i></button>
+              <button class="pad" type="button" data-pad="c:4" style="--pad:var(--c-teal)">&#9617;<i>5</i></button>
+              <button class="pad" type="button" data-pad="c:5" style="--pad:var(--c-rose)">&#9210;<i>6</i></button>
+              <button class="pad" type="button" data-pad="c:6" style="--pad:var(--c-rose)">&#10226;<i>7</i></button>
+              <button class="pad" type="button" data-pad="c:7" style="--pad:var(--c-teal)">&#9093;<i>8</i></button>
+            </div>
+            <button class="open-sheet-btn" type="button" data-open-sheet="c">Open Archive <svg class="icon caret" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+          </div>
 
-          <div class="measure-overlay" id="measure-overlay-c"></div>
-          <ul class="applist" style="list-style:none;margin:0;padding:0;">
+          <div class="scrim on" data-dismiss="c"></div>
+          <div class="sheet on" id="sheet-c">
+            <div class="sheet-handle"></div>
+            <div class="sheet-head">
+              <span class="glyph">&#8776;</span><span class="sheet-title">Archive</span>
+              <button class="sheet-close" type="button" data-close="c" aria-label="Close">&#10005;</button>
+            </div>
+
+            <ul class="applist" style="list-style:none;margin:0;padding:0;">
             <li class="row row-plain" role="button" tabindex="0" data-nav="interf" id="measure-row-c">
               <span class="slot-left glyph">&#8776;</span>
               <span class="text"><span class="title">Interference</span></span>
@@ -375,10 +468,13 @@
             <div class="detail-head"><button class="back-btn" data-back><svg class="icon" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>Archive</button></div>
             <div class="detail-body"><h3>Static Log</h3><p>14 unidentified clips, sorted by signal strength.</p></div>
           </div>
+          </div>
+
+          <div class="measure-overlay" id="measure-overlay-c"></div>
         </div></div>
 
         <button class="measure-btn" type="button" data-measure="c" aria-pressed="false">&#8614; Show measurements</button>
-        <p class="set-caption"><b>Tone &mdash; Nostalgic / dream&#8209;pop:</b> referencing instant&#8209;film bloom and a blurred Polaroid frame&#8209;grid &mdash; a bold, chunky ASCII pixel field blooms through a hot cool&#8209;to&#8209;warm gradient (indigo &rarr; blue &rarr; magenta &rarr; amber), under real film grain and a VT323 scanline. Move your cursor through it: instead of painting, it <i>parts</i> the field &mdash; clearing a wake that bleeds back in behind you, like wiping condensation off glass. Press a row for a stronger burst.</p>
+        <p class="set-caption"><b>Context:</b> the list isn&rsquo;t the whole app &mdash; it&rsquo;s a sheet that pops up over a real home screen (toolbar, a tappable 8&#8209;pad grid, the field itself as the backdrop), the way a menu actually sits on top of something. Tap a pad to send a burst of color into the field below; close the sheet to see it. <b>Tone &mdash; Nostalgic / dream&#8209;pop:</b> referencing instant&#8209;film bloom and a blurred Polaroid frame&#8209;grid &mdash; a bold, chunky ASCII pixel field blooms through a hot cool&#8209;to&#8209;warm gradient (indigo &rarr; blue &rarr; magenta &rarr; amber), under real film grain and a VT323 scanline. Move your cursor through it: instead of painting, it <i>parts</i> the field &mdash; clearing a wake that bleeds back in behind you, like wiping condensation off glass. Press a row for a stronger burst.</p>
 
         <div class="states-card">
           <h4>States &mdash; frozen for reference</h4>
@@ -454,11 +550,39 @@
           <canvas class="fluid-color" id="d-color"></canvas>
           <canvas class="fluid-glyph" id="d-glyph"></canvas>
           <div class="grain" aria-hidden="true"></div>
-          <div class="statusbar"><span>09:41</span><span class="readout" id="d-readout">FLOW 0.000</span></div>
-          <div class="app-head"><span class="k">Undertow</span><h2>Live Current Monitor</h2></div>
+          <div class="home">
+            <div class="toolbar">
+              <span class="tb-pill">MONITOR <svg class="icon chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+              <span class="tb-dot rec" aria-hidden="true"></span>
+              <span class="tb-icon">&#9654;</span>
+              <span class="readout tb-readout" id="d-readout">FLOW 0.000</span>
+              <button class="tb-btn" type="button">&#8779; GUIDE</button>
+              <button class="tb-btn tb-gear" type="button" aria-label="Settings">&#9881;</button>
+            </div>
+            <div class="app-head"><span class="k">Undertow</span><h2>Live Current Monitor</h2></div>
+            <div class="padgrid-label">&#8779; ZONES</div>
+            <div class="padgrid">
+              <button class="pad" type="button" data-pad="d:0" style="--pad:var(--d-amber)">&#9678;<i>1</i></button>
+              <button class="pad" type="button" data-pad="d:1" style="--pad:var(--d-cyan)">&#9888;<i>2</i></button>
+              <button class="pad" type="button" data-pad="d:2" style="--pad:var(--d-amber)">&#8779;<i>3</i></button>
+              <button class="pad" type="button" data-pad="d:3" style="--pad:var(--d-cyan)">&#9654;<i>4</i></button>
+              <button class="pad" type="button" data-pad="d:4" style="--pad:var(--d-cyan)">&#9662;<i>5</i></button>
+              <button class="pad" type="button" data-pad="d:5" style="--pad:var(--d-amber)">&#10010;<i>6</i></button>
+              <button class="pad" type="button" data-pad="d:6" style="--pad:var(--d-amber)">&#10226;<i>7</i></button>
+              <button class="pad" type="button" data-pad="d:7" style="--pad:var(--d-cyan)">&#9093;<i>8</i></button>
+            </div>
+            <button class="open-sheet-btn" type="button" data-open-sheet="d">Open Monitor <svg class="icon caret" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+          </div>
 
-          <div class="measure-overlay" id="measure-overlay-d"></div>
-          <ul class="applist" style="list-style:none;margin:0;padding:0;">
+          <div class="scrim on" data-dismiss="d"></div>
+          <div class="sheet on" id="sheet-d">
+            <div class="sheet-handle"></div>
+            <div class="sheet-head">
+              <span class="glyph">&#9678;</span><span class="sheet-title">Monitor</span>
+              <button class="sheet-close" type="button" data-close="d" aria-label="Close">&#10005;</button>
+            </div>
+
+            <ul class="applist" style="list-style:none;margin:0;padding:0;">
             <li class="row row-plain" role="button" tabindex="0" data-nav="storm" id="measure-row-d">
               <span class="slot-left glyph">&#9678;</span>
               <span class="text"><span class="title">Storm Cell 7</span></span>
@@ -506,10 +630,13 @@
             <div class="detail-head"><button class="back-btn" data-back><svg class="icon" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>Undertow</button></div>
             <div class="detail-body"><h3>Alerts</h3><p>3 active &mdash; small craft advisory, rip current, offshore gale watch.</p></div>
           </div>
+          </div>
+
+          <div class="measure-overlay" id="measure-overlay-d"></div>
         </div></div>
 
         <button class="measure-btn" type="button" data-measure="d" aria-pressed="false">&#8614; Show measurements</button>
-        <p class="set-caption"><b>Tone &mdash; Dramatic / fluid dynamics:</b> the backdrop is a real semi&#8209;Lagrangian solver, not an animation &mdash; diffuse, project, advect, every frame, at a lower viscosity than Set C so it stays turbulent. Your cursor doesn&rsquo;t add current, it <i>interrupts</i> it &mdash; carving a wake through the dye that the solver has to recover from. Press a row to inject a directional burst; the readout above reads the field&rsquo;s own mean velocity, live.</p>
+        <p class="set-caption"><b>Context:</b> same idea &mdash; a real monitor home screen (toolbar with a live readout, a tappable 8&#8209;zone pad, the current itself as the backdrop) with the list as a sheet on top. Tap a zone to push a current into the field. <b>Tone &mdash; Dramatic / fluid dynamics:</b> the backdrop is a real semi&#8209;Lagrangian solver, not an animation &mdash; diffuse, project, advect, every frame, at a lower viscosity than Static Hour so it stays turbulent. Your cursor doesn&rsquo;t add current, it <i>interrupts</i> it &mdash; carving a wake through the dye that the solver has to recover from. Press a row to inject a directional burst; the readout above reads the field&rsquo;s own mean velocity, live.</p>
 
         <div class="states-card">
           <h4>States &mdash; frozen for reference</h4>
@@ -908,6 +1035,7 @@
       var baseStrength = 0.5;
       var lastX = null, lastY = null, lastT = 0;
       screenEl.addEventListener('pointermove', function(e){
+        if(e.target.closest('.sheet, .scrim')){ lastX = null; return; }
         var r = screenEl.getBoundingClientRect();
         var nx = (e.clientX - r.left) / r.width, ny = (e.clientY - r.top) / r.height;
         if(nx < 0 || nx > 1 || ny < 0 || ny > 1){ lastX = null; return; }
@@ -928,7 +1056,7 @@
 
     if(renderOpts.clickAdds){
       screenEl.addEventListener('pointerdown', function(e){
-        if(e.target.closest('.row')) return;
+        if(e.target.closest('.row, .sheet, .scrim, button')) return;
         var r = screenEl.getBoundingClientRect();
         var nx = (e.clientX - r.left) / r.width, ny = (e.clientY - r.top) / r.height;
         if(nx < 0 || nx > 1 || ny < 0 || ny > 1) return;
@@ -964,6 +1092,39 @@
       var ny = Math.min(0.96, Math.max(0.04, (rRect.top + rRect.height/2 - sRect.top) / sRect.height));
       var warm = idx % 2 === 0;
       eng.fluid.addImpulse(nx, ny, (Math.random()-0.5)*4.5, -2-Math.random()*2.5, warm?0.95:0.25, warm?0.25:0.95);
+      if(reduceMotion){ eng.fluid.step(); eng.renderer.render(); }
+    });
+  });
+
+  function setSheet(which, on){
+    var sheet = document.getElementById('sheet-'+which);
+    var scrim = document.querySelector('.scrim[data-dismiss="'+which+'"]');
+    if(!sheet) return;
+    sheet.classList.toggle('on', on);
+    if(scrim) scrim.classList.toggle('on', on);
+    if(!on && typeof setMeasuring === 'function') setMeasuring(which, false);
+  }
+
+  document.querySelectorAll('[data-open-sheet]').forEach(function(btn){
+    btn.addEventListener('click', function(){ setSheet(btn.getAttribute('data-open-sheet'), true); });
+  });
+  document.querySelectorAll('[data-close]').forEach(function(btn){
+    btn.addEventListener('click', function(){ setSheet(btn.getAttribute('data-close'), false); });
+  });
+  document.querySelectorAll('[data-dismiss]').forEach(function(el){
+    el.addEventListener('click', function(){ setSheet(el.getAttribute('data-dismiss'), false); });
+  });
+
+  document.querySelectorAll('[data-pad]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var parts = btn.getAttribute('data-pad').split(':');
+      var which = parts[0], idx = parseInt(parts[1], 10);
+      var eng = engines[which];
+      if(!eng) return;
+      var col = idx % 4, row = Math.floor(idx / 4);
+      var nx = 0.14 + col * 0.24, ny = 0.14 + row * 0.1;
+      var warm = idx % 2 === 0;
+      eng.fluid.addImpulse(nx, ny, (Math.random()-0.5)*1.6, (Math.random()-0.5)*1.2 - 0.6, warm?0.8:0.2, warm?0.2:0.8);
       if(reduceMotion){ eng.fluid.step(); eng.renderer.render(); }
     });
   });
@@ -1033,6 +1194,7 @@
   function setMeasuring(which, on){
     var overlay = document.getElementById('measure-overlay-'+which);
     var screenEl = document.getElementById('screen-'+which);
+    var sheetEl = document.getElementById('sheet-'+which);
     var btn = measureBtns[which];
     if(!overlay || !screenEl) return;
     if(overlay.classList.contains('on') === on) return;
@@ -1042,7 +1204,20 @@
     var eng = engines[which];
     if(eng) eng.measuring = on;
     if(on){
-      renderMeasurements(which);
+      // the row lives inside the sheet now — if it was closed, open it and wait
+      // for the slide-up transition to actually finish before measuring real positions
+      var wasClosed = sheetEl && !sheetEl.classList.contains('on');
+      if(wasClosed){
+        setSheet(which, true);
+        var onSettled = function(e){
+          if(e && e.target !== sheetEl) return;
+          sheetEl.removeEventListener('transitionend', onSettled);
+          renderMeasurements(which);
+        };
+        sheetEl.addEventListener('transitionend', onSettled);
+      } else {
+        renderMeasurements(which);
+      }
     } else {
       overlay.classList.remove('scrim-in');
     }
