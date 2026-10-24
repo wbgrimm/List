@@ -272,6 +272,30 @@
   .set-c .subrows-wrapper .subrows{opacity:0; filter:blur(5px); transition:opacity 200ms ease 40ms, filter 200ms ease 40ms;}
   .set-c .subrows-wrapper.open .subrows{opacity:1; filter:blur(0);}
 
+  /* Static Hour: screen overlaps dither into existence, and buttons dither on press —
+     an 8x8 ordered Bayer pattern, binarized, scaled up with pixelated rendering so it
+     reads as chunky retro dither rather than a smooth fade. */
+  .set-c .sheet::after, .set-c .detail::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAAAAADhZOFXAAAAEElEQVR42mNg+I8GGcgSAQB8BB/h+harkQAAAABJRU5ErkJggg==");
+    background-size:5px 5px; image-rendering:pixelated;
+    mix-blend-mode:overlay; opacity:.85;
+  }
+  .set-c .sheet::after{transition:opacity 380ms steps(6,end);}
+  .set-c .sheet.on::after{opacity:0;}
+  .set-c .detail::after{transition:opacity 340ms steps(5,end);}
+  .set-c .detail.is-open::after{opacity:0;}
+
+  .set-c button{position:relative; overflow:hidden;}
+  .set-c button::after{
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:0;
+    background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAAAAADhZOFXAAAAEElEQVR42mNg+I8GGcgSAQB8BB/h+harkQAAAABJRU5ErkJggg==");
+    background-size:5px 5px; image-rendering:pixelated;
+    mix-blend-mode:difference;
+  }
+  @keyframes dither-press{ 0%{opacity:.85;} 100%{opacity:0;} }
+  .set-c button.dithering::after{animation:dither-press 300ms steps(5,end);}
+
   /* Undertow: things surge past rest and settle, like a current finding its level */
   .set-d .sheet{transition:transform 440ms cubic-bezier(.34,1.56,.64,1);}
   .set-d .detail{transition:transform 420ms cubic-bezier(.34,1.56,.64,1);}
@@ -537,6 +561,7 @@
           <tr><td>Card outline</td><td class="val">1px, 14% opacity</td></tr>
           <tr><td>Icon glyph</td><td class="val">Space Mono 400, 19px &mdash; <i>no stroke width:</i> icons are monospace characters, not drawn strokes. Size + weight are the equivalent tokens.</td></tr>
           <tr><td>Sheet / detail / expand</td><td class="val">blur(9/7/5px)&rarr;0 alongside the slide, 320&#8211;360ms &mdash; arrives out of focus, like a print developing</td></tr>
+          <tr><td>Dither</td><td class="val">8&times;8 ordered Bayer pattern, binarized, 5px tile &mdash; screen overlaps dither out as they settle (340&#8211;380ms, stepped); every button dithers on press (300ms, stepped)</td></tr>
         </table></div>
         <div class="spec-section"><h4>Color &mdash; two 5&#8209;stop gradients</h4><div class="swatches">
           <span class="swatch"><i style="background:#1A1030"></i>bg #1A1030</span>
@@ -1175,6 +1200,19 @@
       fluid.addImpulse(nx, ny, 0, 0, warm?0.55:0.3, warm?0.3:0.55);
     }
   };
+
+  // Static Hour only: every button dithers on press (independent of whatever
+  // else that button's click handler does).
+  document.querySelectorAll('.set-c button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      btn.classList.remove('dithering');
+      void btn.offsetWidth;
+      btn.classList.add('dithering');
+    });
+    btn.addEventListener('animationend', function(e){
+      if(e.target === btn) btn.classList.remove('dithering');
+    });
+  });
 
   document.querySelectorAll('[data-pad]').forEach(function(btn, i){
     btn.addEventListener('click', function(){
